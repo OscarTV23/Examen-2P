@@ -19,6 +19,43 @@ struct otCoordenada
     otCoordenada* izquierda;
     otCoordenada* derecha;
 };
+void otLeerArchivo(string nombreArchivo) 
+{
+    ifstream archivo(nombreArchivo.c_str());
+    string linea;
+    int contador = 0;
+    cout<<"[+]Leyendo Coordenadas ..."<<endl;
+    cout<<"         Cap,   Geo,   Tipo Arsenal"<<endl;
+    cout<<GREEN;
+    if (archivo.is_open()) 
+    {
+        while (getline(archivo, linea)) 
+        {
+            if (contador == 0) {
+                contador++;
+                continue;
+            }
+            int ind =0;
+            string c= "-"; 
+            for(int i=0; i<= 100; i++)
+            {   
+                if(i % 4 ==0)
+                ind =0;
+                cout    << "\r" << c[ind++]   
+                        << "   " << i << "%"<<"   ";
+                Sleep(20);
+            }
+            cout << linea << endl;
+        }
+        archivo.close();
+    }
+    else 
+    {
+        cout << "No se pudo abrir el archivo." << endl;
+    }
+    cout<<RESET;
+}
+
 void otInsertarCoordenada(otCoordenada*& raiz, int capacidad, string geo, string arsenal ) {
     if (raiz == nullptr) {
         raiz = new otCoordenada;
@@ -34,7 +71,7 @@ void otInsertarCoordenada(otCoordenada*& raiz, int capacidad, string geo, string
     }
 }
 
-void otLeerArchivo(string pathFile, otCoordenada*& raiz) {
+void LeerArchivo(string pathFile, otCoordenada*& raiz) {
     string s;
     fstream f;
     f.open(pathFile, ios_base::in);
@@ -42,109 +79,54 @@ void otLeerArchivo(string pathFile, otCoordenada*& raiz) {
         cout << "Error de abrir el archivo." << endl;
     else {
         while(getline(f, s)) {
-            size_t pos = s.find(',');
-            int capacidad = s.substr(0, pos);
-            string geo = s.substr(pos+1);  
-            string arsenal = s.substr(pos+2);    
-            int destruccion;
-            stringstream ss(geo);  
-            ss >> destruccion;  
-
-            otInsertarCoordenada(raiz, capacidad, geo, arsenal);
+            stringstream ss(s);
+            string capacidad_str, geolocalizacion_str, arsenal_str;
+            getline(ss, capacidad_str, ',');
+            getline(ss, geolocalizacion_str, ',');
+            getline(ss, arsenal_str);
+            int capacidad = stoi(capacidad_str);
+            string geolocalizacion = geolocalizacion_str;
+            string arsenal = arsenal_str;
+            otInsertarCoordenada(raiz, capacidad, geolocalizacion, arsenal);
         }
     }
     f.close();
 }
-void otLeerArchivo(string pathFile) { 
-    string s;
-    fstream f;
-    f.open(pathFile, ios_base::in);
-    if ( !f.is_open() ) 
-        cout << "Error de abrir el archivo." << endl;
-    else
-    {
-        int progress = 0;
-        int totalLines = 0;
-        while ( getline(f, s) )
-        {
-            cout << s << endl;
-            progress++;
-            totalLines++;
-            int load = (progress * 100) / totalLines;
-            cout << "Carga: " << load << "%" << endl;
-        }
-        Sleep(600);
-    }
-    f.close();
-    system("pause");
-}
-
-void otVerArbol(Coordenda* arbol, int n) {
+void otVerArbol(otCoordenada* arbol, int n) {
     if (arbol == nullptr) {
         return;
     }
-    verArbol(arbol->derecha, n+1);
+    otVerArbol(arbol->derecha, n + 1);
 
-    for (int i=0; i<n; i++) {
+
+    for (int i = 0; i < n; i++) {
         cout << "      ";
     }
 
-    cout << arbol->nombre << " (Poblacion: " << arbol->poblacion << ")" << endl;
+    cout << arbol->geolocalizacion <<  arbol->capacidad <<"{"<< arbol->Arsenal << "}" << endl;
 
-    verArbol(arbol->izquierda, n+1);
+    otVerArbol(arbol->izquierda, n + 1);
 }
 
 void otInfoArbol()
 {
-    cout<< "[+]Informacion Arbol Binario de capacidad belica Ucrania"<<endl
+    cout<<BLUE
+        << "[+]Informacion Arbol Binario de capacidad belica Ucrania"<<endl
         << "Developer-Nombre :  "<< OTNOMBRE<<endl
         << "Developer-Cedula :  "<< OTCEDULA<<endl
         << "Capacidad Belica :  34"<<endl
-        << "Coordenada Total :  10"<< endl
-        << "Cordenadad- SecCarga : 1 2 4 5 7";
+        << "Coordenada Total :  5"<< endl
+        << "Cordenadad- SecCarga : 1 2 4 5 7"<<endl<<RESET;
 }
-int main()
-{
+int main() {
+    otCoordenada* raiz = nullptr;
+    //otLeerArchivo("datafiles/Arsenal.txt");
+    //system("pause");
+    //system("cls");
+    //otInfoArbol();
+    //system("pause");
+    //system("cls");
+    otVerArbol(raiz, 0);
     
-    otLeerArchivo("datafiles/Arsenal.txt");
-    otInfoArbol();
     return 0;
 }
-
-
-//void otInsertarCoordenada(otCoordenada*& raiz, int capacidad, string geo, string arsenal ) {
-//    if (raiz == nullptr) {
-//        raiz = new otCoordenada;
-//        raiz->capacidad  = capacidad;
-//        raiz->geolocalizacion = geo;
-//        raiz-> Arsenal = arsenal;
-//        raiz->izquierda = nullptr;
-//        raiz->derecha = nullptr;
-//    } else if (capacidad < raiz->capacidad) {
-//        otInsertarCoordenada(raiz->izquierda, capacidad, geo, arsenal);
-//    } else {
-//        otInsertarCoordenada(raiz->derecha, capacidad, geo, arsenal);
-//    }
-//}
-//
-//void otLeerArchivo(string pathFile, otCoordenada*& raiz) {
-//    string s;
-//    fstream f;
-//    f.open(pathFile, ios_base::in);
-//    if ( !f.is_open() ) 
-//        cout << "Error de abrir el archivo." << endl;
-//    else {
-//        while(getline(f, s)) {
-//            size_t pos = s.find(',');
-//            string capacidad = s.substr(0, pos);
-//            string geo = s.substr(pos+1);  
-//            string arsenal = s.substr(pos+2);    // Leer la población como una cadena de caracteres
-//            int destruccion;
-//            stringstream ss(geo);  // Crear un objeto stringstream con la cadena de caracteres
-//            ss >> destruccion;  // Leer el valor entero de la cadena de caracteres
-//
-//            otInsertarCoordenada(raiz, capacidad, geo, arsenal);
-//        }
-//    }
-//    f.close();
-//}
