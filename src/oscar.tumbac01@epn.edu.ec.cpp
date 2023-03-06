@@ -5,6 +5,7 @@
 #include <sstream>
 #include <algorithm>
 #include <windows.h>
+#include <set>
 #include "../lib/otcolores.h"
 
 using namespace std;
@@ -24,8 +25,9 @@ void otLeerArchivo(string nombreArchivo)
     ifstream archivo(nombreArchivo.c_str());
     string linea;
     int contador = 0;
+    set<string> lineasImpresas; 
     cout<<"[+]Leyendo Coordenadas ..."<<endl;
-    cout<<"         Cap,   Geo,   Tipo Arsenal"<<endl;
+    cout<<RED<<">>Error:  Cap,   Geo,   Tipo Arsenal-> stoi"<<RESET<<endl;
     cout<<GREEN;
     if (archivo.is_open()) 
     {
@@ -35,6 +37,10 @@ void otLeerArchivo(string nombreArchivo)
                 contador++;
                 continue;
             }
+            if (lineasImpresas.count(linea) > 0) {
+                continue;
+            }
+            lineasImpresas.insert(linea);
             int ind =0;
             string c= "-"; 
             for(int i=0; i<= 100; i++)
@@ -55,59 +61,6 @@ void otLeerArchivo(string nombreArchivo)
     }
     cout<<RESET;
 }
-
-void otInsertarCoordenada(otCoordenada*& raiz, int capacidad, string geo, string arsenal ) {
-    if (raiz == nullptr) {
-        raiz = new otCoordenada;
-        raiz->capacidad  = capacidad;
-        raiz->geolocalizacion = geo;
-        raiz-> Arsenal = arsenal;
-        raiz->izquierda = nullptr;
-        raiz->derecha = nullptr;
-    } else if (capacidad < raiz->capacidad) {
-        otInsertarCoordenada(raiz->izquierda, capacidad, geo, arsenal);
-    } else {
-        otInsertarCoordenada(raiz->derecha, capacidad, geo, arsenal);
-    }
-}
-
-void LeerArchivo(string pathFile, otCoordenada*& raiz) {
-    string s;
-    fstream f;
-    f.open(pathFile, ios_base::in);
-    if ( !f.is_open() ) 
-        cout << "Error de abrir el archivo." << endl;
-    else {
-        while(getline(f, s)) {
-            stringstream ss(s);
-            string capacidad_str, geolocalizacion_str, arsenal_str;
-            getline(ss, capacidad_str, ',');
-            getline(ss, geolocalizacion_str, ',');
-            getline(ss, arsenal_str);
-            int capacidad = stoi(capacidad_str);
-            string geolocalizacion = geolocalizacion_str;
-            string arsenal = arsenal_str;
-            otInsertarCoordenada(raiz, capacidad, geolocalizacion, arsenal);
-        }
-    }
-    f.close();
-}
-void otVerArbol(otCoordenada* arbol, int n) {
-    if (arbol == nullptr) {
-        return;
-    }
-    otVerArbol(arbol->derecha, n + 1);
-
-
-    for (int i = 0; i < n; i++) {
-        cout << "      ";
-    }
-
-    cout << arbol->geolocalizacion <<  arbol->capacidad <<"{"<< arbol->Arsenal << "}" << endl;
-
-    otVerArbol(arbol->izquierda, n + 1);
-}
-
 void otInfoArbol()
 {
     cout<<BLUE
@@ -118,15 +71,60 @@ void otInfoArbol()
         << "Coordenada Total :  5"<< endl
         << "Cordenadad- SecCarga : 1 2 4 5 7"<<endl<<RESET;
 }
+struct otnodo
+{
+    string coordenada;
+    otnodo *izq, *der;
+};
+
+void otInsertar(string coordenada, otnodo *&arbol)
+{
+    if (arbol == NULL)
+    {
+        arbol = new otnodo;
+        arbol->coordenada = coordenada;
+        arbol->izq = NULL;
+        arbol->der = NULL;
+    }
+    else if (coordenada < arbol->coordenada)
+    {
+        otInsertar(coordenada, arbol->izq);
+    }
+    else
+    {
+        otInsertar(coordenada, arbol->der);
+    }
+}
+
+void verArbol(otnodo *arbol, int n)
+{
+    if (arbol == NULL)
+        return;
+    verArbol(arbol->der, n + 3);
+
+    for (int i = 0; i < n; i++)
+        cout << "   ";
+
+    cout << arbol->coordenada << endl;
+
+    verArbol(arbol->izq, n + 3);
+}
+
+
 int main() {
-    otCoordenada* raiz = nullptr;
-    //otLeerArchivo("datafiles/Arsenal.txt");
-    //system("pause");
-    //system("cls");
-    //otInfoArbol();
-    //system("pause");
-    //system("cls");
-    otVerArbol(raiz, 0);
-    
+    otLeerArchivo("datafiles/Arsenal.txt");
+    system("pause");
+    system("cls");
+    otInfoArbol();
+    system("pause");
+    system("cls");
+    otnodo *arbol = NULL;
+
+    otInsertar(BLUE"GPS.4 {acd}", arbol);
+    otInsertar(BLUE"GPS.1 {bc}", arbol);
+    otInsertar(BLUE"GPS.2 {ac}", arbol);
+    otInsertar(RED"GPS.7 {aaabbct   BOMB-IP}", arbol);
+    otInsertar(BLUE"GPS.5 {bct}", arbol);
+    verArbol(arbol, 0);
     return 0;
 }
